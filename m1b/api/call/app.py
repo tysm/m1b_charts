@@ -1,7 +1,7 @@
 import datetime
 
 import numpy as np
-from flask import request
+from flask import request, make_response
 from flask_restful import Resource
 from peewee import fn as peewee_fn
 from werkzeug.exceptions import BadRequest
@@ -93,9 +93,9 @@ class CallBarChart(Resource):
         emotions_values = np.asarray(list(emotions.values()), dtype=np.float32)
         emotions_values /= emotions_values.max()
 
-        bar_chart(emotions_keys, emotions_values)
-
-        return emotions
+        response = make_response(bar_chart(emotions_keys, emotions_values))
+        response.headers.set("Content-Type", "image/png")
+        return response
 
 
 class CallTimeChart(Resource):
@@ -109,7 +109,9 @@ class CallTimeChart(Resource):
             Emotions.select().where(Emotions.call == call).execute()
         )
         if len(call_emotions_list) == 0:
-            return {}
+            response = make_response(b"")
+            response.headers.set("Content-Type", "image/png")
+            return response
 
         times = []
         emotions = {
@@ -133,8 +135,11 @@ class CallTimeChart(Resource):
             emotions["tristeza"].append(item.sadness)
             emotions["surpresa"].append(item.surprise)
 
-        linear_char(list(emotions.keys()), list(emotions.values()), times)
-        return {}
+        response = make_response(
+            linear_char(list(emotions.keys()), list(emotions.values()), times)
+        )
+        response.headers.set("Content-Type", "image/png")
+        return response
 
 
 class CallTimeChartEmotion(Resource):
@@ -161,7 +166,9 @@ class CallTimeChartEmotion(Resource):
             Emotions.select().where(Emotions.call == call).execute()
         )
         if len(call_emotions_list) == 0:
-            return {}
+            response = make_response(b"")
+            response.headers.set("Content-Type", "image/png")
+            return response
 
         times = []
         emotions = {emotion: []}
@@ -169,5 +176,8 @@ class CallTimeChartEmotion(Resource):
             times.append((item.timestamp - call.timestamp).total_seconds() / 60)
             emotions[valid_emotions[emotion]].append(getattr(item, emotion))
 
-        linear_char(list(emotions.keys()), list(emotions.values()), times)
-        return {}
+        response = make_response(
+            linear_char(list(emotions.keys()), list(emotions.values()), times)
+        )
+        response.headers.set("Content-Type", "image/png")
+        return response

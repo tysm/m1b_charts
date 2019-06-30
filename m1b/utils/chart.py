@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,7 +15,10 @@ def bar_chart(labels: list, values: np.array):
     plt.ylabel("Predominance")
     plt.title("Emotion Predominance")
 
-    plt.show()
+    imgdata = BytesIO()
+    plt.savefig(imgdata, format="png")
+    imgdata.seek(0)
+    return imgdata.read()
 
 
 def linear_char(labels: list, values_list: list, times: list):
@@ -26,12 +31,7 @@ def linear_char(labels: list, values_list: list, times: list):
 
     plt.legend(labels, loc=4)
 
-    plt.show()
-
-
-if __name__ == "__main__":
-    linear_char(
-        ["anger", "happy"],
-        [[0, 0.5, 1, 0.5, 0.2], [1, 0.5, 0, 0.5, 0.8]],
-        [0, 1, 2, 3, 4],
-    )
+    imgdata = BytesIO()
+    plt.savefig(imgdata, format="png")
+    imgdata.seek(0)
+    return imgdata.read()
