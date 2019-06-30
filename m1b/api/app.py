@@ -23,6 +23,15 @@ class Index(Resource):
         }
 
 
+def add_cors_to_response(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers[
+        "Access-Control-Allow-Methods"
+    ] = "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+    return response
+
+
 app = Flask(__name__)
 api = Api(app)
 api.add_resource(Index, "/")
@@ -33,6 +42,7 @@ api.add_resource(CallTimeChart, "/calls/<int:call_id>/time_chart")
 api.add_resource(
     CallTimeChartEmotion, "/calls/<int:call_id>/time_chart/<string:emotion>"
 )
+app.after_request(add_cors_to_response)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
