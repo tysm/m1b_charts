@@ -1,3 +1,4 @@
+from peewee import DateTimeField
 from peewee import IntegerField
 from peewee import FloatField
 from peewee import ForeignKeyField
@@ -10,6 +11,7 @@ class Call(_BaseModel):
         table_name = "call"
 
     user_id = IntegerField()
+    timestamp = DateTimeField()
 
 
 class Emotions(_BaseModel):
@@ -26,6 +28,7 @@ class Emotions(_BaseModel):
     neutral = FloatField()
     sadness = FloatField()
     surprise = FloatField()
+    timestamp = DateTimeField()
 
 
 _CALLS_TABLES = (Call, Emotions)

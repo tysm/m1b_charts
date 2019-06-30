@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 from flask import request
 from flask_restful import Resource
@@ -6,6 +8,7 @@ from werkzeug.exceptions import BadRequest
 
 from m1b.db.models.calls import Call, Emotions
 from m1b.utils.chart import bar_chart, linear_char
+from m1b.utils.face import request_emotion
 
 
 class NewCall(Resource):
@@ -16,24 +19,40 @@ class NewCall(Resource):
         if not isinstance(user_id, int):
             raise BadRequest("invalid user_id")
 
-        new_call = Call.create(user_id=user_id)
+        timestamp = request.args.get("timestamp")
+        if not isinstance(timestamp, str):
+            raise BadRequest("invalid timestamp")
+        timestamp = datetime.datetime.fromisoformat(timestamp)
+
+        new_call = Call.create(user_id=user_id, timestamp=timestamp)
         return {"id": new_call.id}
 
 
 class AddEmotions(Resource):
     def post(self, call_id: int):
-        post_body = request.get_json()
+        image = request.data
+        if not image:
+            raise BadRequest("invalid image data")
+        post_body = request_emotion(image)
+
+        if not isinstance(post_body, list):
+            raise BadRequest("invalid image data")
 
         try:
             call = Call.get_by_id(call_id)
         except Call.DoesNotExist:
             raise BadRequest("invalid call_id")
 
-        emotions = post_body.get("emotions")
+        timestamp = request.args.get("timestamp")
+        if not isinstance(timestamp, str):
+            raise BadRequest("invalid timestamp")
+        timestamp = datetime.datetime.fromisoformat(timestamp)
+
+        emotions = post_body[0]["faceAttributes"].get("emotion")
         if not isinstance(emotions, dict):
             raise BadRequest("invalid emotions")
 
-        new_emotions = Emotions.create(call=call, **emotions)
+        new_emotions = Emotions.create(call=call, timestamp=timestamp, **emotions)
         emotions["id"] = new_emotions.id
         return {"id": call_id, "emotions": emotions}
 
@@ -104,7 +123,7 @@ class CallTimeChart(Resource):
             "surprise": [],
         }
         for item in call_emotions_list:
-            times.append((item.created_at - call.created_at).total_seconds() / 60)
+            times.append((item.timestamp - call.timestamp).total_seconds() / 60)
             emotions["anger"].append(item.anger)
             emotions["contempt"].append(item.contempt)
             emotions["disgust"].append(item.disgust)
@@ -147,7 +166,7 @@ class CallTimeChartEmotion(Resource):
         times = []
         emotions = {emotion: []}
         for item in call_emotions_list:
-            times.append((item.created_at - call.created_at).total_seconds() / 60)
+            times.append((item.timestamp - call.timestamp).total_seconds() / 60)
             emotions[emotion].append(getattr(item, emotion))
 
         linear_char(list(emotions.keys()), list(emotions.values()), times)
