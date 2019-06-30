@@ -171,7 +171,7 @@ class CallTimeChartEmotion(Resource):
             return response
 
         times = []
-        emotions = {emotion: []}
+        emotions = {valid_emotions[emotion]: []}
         for item in call_emotions_list:
             times.append((item.timestamp - call.timestamp).total_seconds() / 60)
             emotions[valid_emotions[emotion]].append(getattr(item, emotion))
