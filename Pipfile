@@ -12,6 +12,8 @@ peewee = "*"
 PyMySQL = "*"
 numpy = "*"
 matplotlib = "*"
+requests = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
