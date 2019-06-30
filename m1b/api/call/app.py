@@ -79,14 +79,14 @@ class CallBarChart(Resource):
             .execute()
         )[0]
         emotions = {
-            "anger": call_emotions_total.anger_total or 0.0,
-            "contempt": call_emotions_total.contempt_total or 0.0,
-            "disgust": call_emotions_total.disgust_total or 0.0,
-            "fear": call_emotions_total.fear_total or 0.0,
-            "happiness": call_emotions_total.happiness_total or 0.0,
-            "neutral": call_emotions_total.neutral_total or 0.0,
-            "sadness": call_emotions_total.sadness_total or 0.0,
-            "surprise": call_emotions_total.surprise_total or 0.0,
+            "raiva": call_emotions_total.anger_total or 0.0,
+            "desprezo": call_emotions_total.contempt_total or 0.0,
+            "desgosto": call_emotions_total.disgust_total or 0.0,
+            "medo": call_emotions_total.fear_total or 0.0,
+            "felicidade": call_emotions_total.happiness_total or 0.0,
+            "neutro": call_emotions_total.neutral_total or 0.0,
+            "tristeza": call_emotions_total.sadness_total or 0.0,
+            "surpresa": call_emotions_total.surprise_total or 0.0,
         }
 
         emotions_keys = list(emotions.keys())
@@ -113,25 +113,25 @@ class CallTimeChart(Resource):
 
         times = []
         emotions = {
-            "anger": [],
-            "contempt": [],
-            "disgust": [],
-            "fear": [],
-            "happiness": [],
-            "neutral": [],
-            "sadness": [],
-            "surprise": [],
+            "raiva": [],
+            "desprezo": [],
+            "desgosto": [],
+            "medo": [],
+            "felicidade": [],
+            "neutro": [],
+            "tristeza": [],
+            "surpresa": [],
         }
         for item in call_emotions_list:
             times.append((item.timestamp - call.timestamp).total_seconds() / 60)
-            emotions["anger"].append(item.anger)
-            emotions["contempt"].append(item.contempt)
-            emotions["disgust"].append(item.disgust)
-            emotions["fear"].append(item.fear)
-            emotions["happiness"].append(item.happiness)
-            emotions["neutral"].append(item.neutral)
-            emotions["sadness"].append(item.sadness)
-            emotions["surprise"].append(item.surprise)
+            emotions["raiva"].append(item.anger)
+            emotions["desprezo"].append(item.contempt)
+            emotions["desgosto"].append(item.disgust)
+            emotions["medo"].append(item.fear)
+            emotions["felicidade"].append(item.happiness)
+            emotions["neutro"].append(item.neutral)
+            emotions["tristeza"].append(item.sadness)
+            emotions["surpresa"].append(item.surprise)
 
         linear_char(list(emotions.keys()), list(emotions.values()), times)
         return {}
@@ -145,14 +145,14 @@ class CallTimeChartEmotion(Resource):
             raise BadRequest("invalid call_id")
 
         valid_emotions = {
-            "anger",
-            "contempt",
-            "disgust",
-            "fear",
-            "happiness",
-            "neutral",
-            "sadness",
-            "surprise",
+            "anger": "raiva",
+            "contempt": "desprezo",
+            "disgust": "disgust",
+            "fear": "medo",
+            "happiness": "felicidade",
+            "neutral": "neutro",
+            "sadness": "tristeza",
+            "surprise": "surpresa",
         }
         if emotion not in valid_emotions:
             raise BadRequest("invalid emotion")
@@ -167,7 +167,7 @@ class CallTimeChartEmotion(Resource):
         emotions = {emotion: []}
         for item in call_emotions_list:
             times.append((item.timestamp - call.timestamp).total_seconds() / 60)
-            emotions[emotion].append(getattr(item, emotion))
+            emotions[valid_emotions[emotion]].append(getattr(item, emotion))
 
         linear_char(list(emotions.keys()), list(emotions.values()), times)
         return {}
